@@ -5,4 +5,5 @@ coverage
 *.log
 .env.local
 .env.*.local
+.env.production
 worker/.wrangler
