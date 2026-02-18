@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Space Grotesk', 'Avenir Next', 'Segoe UI', sans-serif;
+  color: #1f2a2f;
+  background-color: #f4f1ea;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.leaflet-container {
+  font-family: 'Space Grotesk', 'Avenir Next', 'Segoe UI', sans-serif;
+}
+
+.dark body {
+  background-color: #0a1118;
+  color: #e2e8f0;
+}
+
+.dark .leaflet-popup-content-wrapper,
+.dark .leaflet-popup-tip {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.office-list-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #c8b9ab transparent;
+}
+
+.office-list-scroll::-webkit-scrollbar {
+  width: 11px;
+}
+
+.office-list-scroll::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 9999px;
+}
+
+.office-list-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #d78a6b, #c65d3a);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  border-radius: 9999px;
+}
+
+.office-list-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #df987d, #d06f4f);
+}
+
+.dark .office-list-scroll {
+  scrollbar-color: #4c6074 transparent;
+}
+
+.dark .office-list-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dark .office-list-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #60748a, #4b5f76);
+  border-color: transparent;
+}
+
+.dark .office-list-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #6f869f, #5b7390);
+}
