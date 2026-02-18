@@ -7,7 +7,7 @@ interface OfficeListProps {
   onSearchTermChange: (value: string) => void;
   selectedOfficeId: string | null;
   onOfficeSelect: (officeId: string) => void;
-  favoriteOfficeIds: string[];
+  favoriteOfficeIds: Set<string>;
   onFavoriteToggle: (officeId: string) => void;
   weatherByOfficeId: Record<string, OfficeWeather>;
   loadingByOfficeId: Record<string, boolean>;
@@ -70,7 +70,7 @@ export const OfficeList = ({
               currentTimeMs={currentTimeMs}
               isSelected={selectedOfficeId === office.id}
               onSelect={onOfficeSelect}
-              isFavorite={favoriteOfficeIds.includes(office.id)}
+              isFavorite={favoriteOfficeIds.has(office.id)}
               onToggleFavorite={onFavoriteToggle}
             />
           ))}

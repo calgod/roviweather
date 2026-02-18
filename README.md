@@ -1,101 +1,135 @@
-# RoviSys Worldwide Weather App
+# RoviWeather
 
-React + TypeScript + Vite frontend styled with TailwindCSS and a Leaflet map, backed by a Cloudflare Worker proxy for OpenWeatherMap.
+RoviWeather is a React + TypeScript + Vite app that shows current weather across RoviSys office locations, with a Cloudflare Worker proxy in front of OpenWeatherMap so the API key is never exposed to the frontend.
+
+## Tech Stack
+
+- Frontend: React, TypeScript, Vite, TailwindCSS, Leaflet (`react-leaflet`)
+- Backend proxy: Cloudflare Worker
+- Weather source: OpenWeatherMap `data/2.5/weather`
 
 ## Project Structure
 
-- `src/` - Frontend app (list + cards + map + weather hook)
-- `src/data/offices.ts` - RoviSys office location dataset with coordinates
-- `worker/` - Cloudflare Worker proxy (`/weather?lat=<lat>&lon=<lon>`)
+- `src/` - frontend app
+- `src/components/` - UI components (`OfficeList`, `WeatherCard`, `MapView`)
+- `src/hooks/useWeather.ts` - worker fetch + normalization
+- `src/data/offices.ts` - office data (coordinates, address, image)
+- `worker/` - Cloudflare Worker (`/weather?lat=<lat>&lon=<lon>`)
 
-## Frontend Setup
+## Features
 
-1. Install dependencies and start Vite:
+- Searchable office list
+- Favorites (star icon) persisted in `localStorage`, shown first
+- Per-office weather details:
+  - temperature (selectable `°F` / `°C`)
+  - condition + icon
+  - humidity
+  - wind speed (selectable `mph` / `m/s` / `km/h`)
+  - local current time (office timezone)
+- Theme support:
+  - defaults to system preference (light/dark)
+  - user-toggleable, persisted in `localStorage`
+- Interactive map:
+  - markers for all offices
+  - clicking a card focuses map marker + opens popup
+  - popup includes clickable address (opens Google Maps)
+- Worker-side 10 minute caching via `caches.default`
 
-```bash
-npm install && npm run dev
-```
+## Local Development
 
-2. Frontend config is loaded from `.env`:
-
-```bash
-VITE_WEATHER_API_BASE=http://localhost:8787
-```
-
-If your worker is deployed, replace this with your deployed worker URL.
-
-## Cloudflare Worker Setup
-
-1. Install worker dependencies:
+### 1. Start Worker
 
 ```bash
 cd worker
 npm install
 ```
 
-2. Authenticate with Cloudflare (if needed):
+Set local worker secret:
 
 ```bash
-npx wrangler login
-```
-
-3. Set the OpenWeatherMap API key as a secret (never expose in frontend):
-
-```bash
-npx wrangler secret put OPENWEATHER_API_KEY
-```
-
-For local development with `wrangler dev`, also create `worker/.dev.vars`:
-
-```bash
-cd worker
 echo 'OPENWEATHER_API_KEY=your_openweather_api_key' > .dev.vars
 ```
 
-4. Run locally:
+Run worker:
 
 ```bash
 npm run dev
 ```
 
-5. Deploy:
+Worker default URL: `http://localhost:8787`
+
+### 2. Start Frontend
 
 ```bash
+cd ..
+npm install
+npm run dev
+```
+
+Frontend reads API base from `.env`:
+
+```env
+VITE_WEATHER_API_BASE=http://localhost:8787
+```
+
+## Deployment
+
+### Deploy Worker
+
+```bash
+cd worker
+npx wrangler login
+npx wrangler secret put OPENWEATHER_API_KEY
 npm run deploy
 ```
 
-After deploy, point frontend `VITE_WEATHER_API_BASE` to the worker URL.
+### Deploy Frontend
 
-## Features Implemented
+Create local production env (do not commit):
 
-- Searchable office list for all provided RoviSys locations
-- Weather cards showing:
-  - Office name, city, country
-  - Temperature in Fahrenheit and Celsius
-  - Condition text and icon
-  - Humidity
-  - Wind speed (mph and m/s)
-  - Last updated time
-- Leaflet map with markers for all offices
-- Marker popups with live weather details
-- Custom weather hook (`src/hooks/useWeather.ts`) that calls the worker
-- Loading and error states
-- Worker-side 10 minute caching using `caches.default`
+```bash
+cd ..
+printf "VITE_WEATHER_API_BASE=%s\n" "https://<your-worker>.workers.dev" > .env.production
+```
 
-## Notes
+Build and deploy (example Cloudflare Pages):
 
-- OpenWeatherMap free tier endpoint used: `data/2.5/weather`.
-- The worker only accepts `GET /weather?lat=<lat>&lon=<lon>`.
-- Caching key is normalized by rounded coordinates for higher cache hit rates.
+```bash
+npm run build
+npx wrangler pages project create roviweather
+npx wrangler pages deploy dist --project-name roviweather
+```
 
-## Troubleshooting 500 Errors
+## Environment Files
 
-- `500` from worker often means the API key is missing locally. Ensure `worker/.dev.vars` contains `OPENWEATHER_API_KEY=...`.
-- Verify worker directly:
+- `.env` - local frontend config
+- `.env.production` - local production frontend config (gitignored)
+- `.env.production.example` - committed template
+- `worker/.dev.vars` - local worker secrets (not committed)
+
+## Troubleshooting
+
+### `500` from Worker
+
+Usually means missing worker secret.
+
+Check:
+
+- `worker/.dev.vars` includes `OPENWEATHER_API_KEY=...`
+- worker is running on `http://localhost:8787`
+
+Test worker directly:
 
 ```bash
 curl "http://localhost:8787/weather?lat=41.27814&lon=-81.3289235"
 ```
 
-- If key is invalid or not yet activated by OpenWeatherMap, worker returns `502` with upstream details.
-- After changing `.env` or `.dev.vars`, restart both `npm run dev` processes.
+### `502` from Worker
+
+Usually upstream auth/config issue with OpenWeatherMap (invalid key, key not active yet, or upstream error).
+
+## Notes
+
+- Worker endpoint only supports `GET /weather?lat=<lat>&lon=<lon>`
+- API key is stored in Cloudflare Worker secrets, not in frontend code
+- This website is an independent project and is not affiliated with, endorsed by, or sponsored by The RoviSys Company.

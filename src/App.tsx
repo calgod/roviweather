@@ -42,13 +42,12 @@ const isLikelyUSUser = (): boolean => {
   return US_TERRITORY_TIMEZONE_PREFIXES.includes(timeZone);
 };
 
-const formatLastUpdated = (timestamp: string): string => {
-  const parsed = new Date(timestamp);
-  if (Number.isNaN(parsed.getTime())) {
+const formatLastUpdated = (timestampMs: number): string => {
+  if (Number.isNaN(timestampMs)) {
     return 'Unavailable';
   }
 
-  return parsed.toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  return new Date(timestampMs).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 };
 
 const THEME_STORAGE_KEY = 'roviweather-theme';
@@ -89,14 +88,21 @@ const getInitialFavoriteOfficeIds = (): string[] => {
   }
 };
 
+const getInitialUnitPreferences = (): { temperatureUnit: TemperatureUnit; windSpeedUnit: WindSpeedUnit } => {
+  const usesUSUnits = isLikelyUSUser();
+  return {
+    temperatureUnit: usesUSUnits ? 'F' : 'C',
+    windSpeedUnit: usesUSUnits ? 'mph' : 'km/h'
+  };
+};
+
 function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [theme, setTheme] = useState<ThemeMode>(getInitialTheme);
   const [favoriteOfficeIds, setFavoriteOfficeIds] = useState<string[]>(getInitialFavoriteOfficeIds);
   const [selectedOfficeId, setSelectedOfficeId] = useState<string | null>(offices[0]?.id ?? null);
   const [currentTimeMs, setCurrentTimeMs] = useState(() => Date.now());
-  const [temperatureUnit, setTemperatureUnit] = useState<TemperatureUnit>(() => (isLikelyUSUser() ? 'F' : 'C'));
-  const [windSpeedUnit, setWindSpeedUnit] = useState<WindSpeedUnit>(() => (isLikelyUSUser() ? 'mph' : 'km/h'));
+  const [unitPreferences, setUnitPreferences] = useState(getInitialUnitPreferences);
   const { weatherByOfficeId, errorsByOfficeId, loadingByOfficeId, isInitialLoading, refreshWeather } =
     useWeather(offices);
 
@@ -154,7 +160,7 @@ function App() {
       return acc;
     }, null);
 
-    return latestMs === null ? null : formatLastUpdated(new Date(latestMs).toISOString());
+    return latestMs === null ? null : formatLastUpdated(latestMs);
   }, [weatherByOfficeId]);
 
   const handleOfficeSelect = (officeId: string) => {
@@ -189,8 +195,13 @@ function App() {
                   </label>
                   <select
                     id="temp-unit"
-                    value={temperatureUnit}
-                    onChange={(event) => setTemperatureUnit(event.target.value as TemperatureUnit)}
+                    value={unitPreferences.temperatureUnit}
+                    onChange={(event) =>
+                      setUnitPreferences((current) => ({
+                        ...current,
+                        temperatureUnit: event.target.value as TemperatureUnit
+                      }))
+                    }
                     className="rounded-md border border-white/20 bg-white/10 px-2 py-1 text-xs text-white outline-none"
                   >
                     <option value="F" className="text-ink">
@@ -208,8 +219,13 @@ function App() {
                   </label>
                   <select
                     id="wind-unit"
-                    value={windSpeedUnit}
-                    onChange={(event) => setWindSpeedUnit(event.target.value as WindSpeedUnit)}
+                    value={unitPreferences.windSpeedUnit}
+                    onChange={(event) =>
+                      setUnitPreferences((current) => ({
+                        ...current,
+                        windSpeedUnit: event.target.value as WindSpeedUnit
+                      }))
+                    }
                     className="rounded-md border border-white/20 bg-white/10 px-2 py-1 text-xs text-white outline-none"
                   >
                     <option value="mph" className="text-ink">
@@ -267,21 +283,21 @@ function App() {
             onSearchTermChange={setSearchTerm}
             selectedOfficeId={selectedOfficeId}
             onOfficeSelect={handleOfficeSelect}
-            favoriteOfficeIds={favoriteOfficeIds}
+            favoriteOfficeIds={favoriteOfficeIdSet}
             onFavoriteToggle={handleFavoriteToggle}
             weatherByOfficeId={weatherByOfficeId}
             loadingByOfficeId={loadingByOfficeId}
             errorsByOfficeId={errorsByOfficeId}
-            temperatureUnit={temperatureUnit}
-            windSpeedUnit={windSpeedUnit}
+            temperatureUnit={unitPreferences.temperatureUnit}
+            windSpeedUnit={unitPreferences.windSpeedUnit}
             currentTimeMs={currentTimeMs}
           />
           <MapView
             offices={offices}
             weatherByOfficeId={weatherByOfficeId}
             errorsByOfficeId={errorsByOfficeId}
-            temperatureUnit={temperatureUnit}
-            windSpeedUnit={windSpeedUnit}
+            temperatureUnit={unitPreferences.temperatureUnit}
+            windSpeedUnit={unitPreferences.windSpeedUnit}
             selectedOfficeId={selectedOfficeId}
             onOfficeSelect={handleOfficeSelect}
             theme={theme}

@@ -26,6 +26,12 @@ const capitalizeFirst = (value: string): string => {
   return value.charAt(0).toUpperCase() + value.slice(1);
 };
 
+const buildLoadingState = (officeIds: string[], value: boolean): Record<string, boolean> =>
+  officeIds.reduce<Record<string, boolean>>((acc, officeId) => {
+    acc[officeId] = value;
+    return acc;
+  }, {});
+
 export const useWeather = (offices: Office[]): WeatherState => {
   const officeIds = useMemo(() => offices.map((office) => office.id), [offices]);
   const [weatherByOfficeId, setWeatherByOfficeId] = useState<Record<string, OfficeWeather>>({});
@@ -34,12 +40,7 @@ export const useWeather = (offices: Office[]): WeatherState => {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   const refreshWeather = useCallback(async () => {
-    setLoadingByOfficeId(
-      officeIds.reduce<Record<string, boolean>>((acc, officeId) => {
-        acc[officeId] = true;
-        return acc;
-      }, {})
-    );
+    setLoadingByOfficeId(buildLoadingState(officeIds, true));
 
     const fetchJobs = offices.map(async (office): Promise<WeatherFetchResult> => {
       const endpoint = `${WEATHER_BASE_URL}/weather?lat=${office.latitude}&lon=${office.longitude}`;
@@ -94,12 +95,7 @@ export const useWeather = (offices: Office[]): WeatherState => {
 
     setWeatherByOfficeId(nextWeather);
     setErrorsByOfficeId(nextErrors);
-    setLoadingByOfficeId(
-      officeIds.reduce<Record<string, boolean>>((acc, officeId) => {
-        acc[officeId] = false;
-        return acc;
-      }, {})
-    );
+    setLoadingByOfficeId(buildLoadingState(officeIds, false));
     setIsInitialLoading(false);
   }, [officeIds, offices]);
 
