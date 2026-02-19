@@ -7,3 +7,4 @@ coverage
 .env.*.local
 .env.production
 worker/.wrangler
+worker/.dev.vars
