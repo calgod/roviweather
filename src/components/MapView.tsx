@@ -17,7 +17,27 @@ const mapMarkerIcon = L.icon({
   shadowSize: [41, 41]
 });
 
-L.Marker.prototype.options.icon = mapMarkerIcon;
+const darkMapMarkerIcon = L.icon({
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+  className: 'rovi-marker-pin rovi-marker-pin--dark'
+});
+
+const darkMapMarkerSelectedIcon = L.icon({
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+  className: 'rovi-marker-pin rovi-marker-pin--dark rovi-marker-pin--selected'
+});
 
 interface MapViewProps {
   offices: Office[];
@@ -39,8 +59,14 @@ interface MapSelectionControllerProps {
 const MapSelectionController = ({ selectedOfficeId, officesById, markerRefs }: MapSelectionControllerProps) => {
   const map = useMap();
   const selectionRequestRef = useRef(0);
+  const previousSelectedOfficeId = useRef<string | null>(null);
 
   useEffect(() => {
+    if (previousSelectedOfficeId.current === selectedOfficeId) {
+      return;
+    }
+    previousSelectedOfficeId.current = selectedOfficeId;
+
     selectionRequestRef.current += 1;
     const requestId = selectionRequestRef.current;
 
@@ -128,15 +154,11 @@ export const MapView = ({
           worldCopyJump
         >
           <TileLayer
-            attribution={
-              isDark
-                ? '&copy; OpenStreetMap contributors &copy; CARTO'
-                : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }
+            attribution="&copy; OpenStreetMap contributors &copy; CARTO"
             url={
               isDark
                 ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-                : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+                : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
             }
           />
           <MapSelectionController selectedOfficeId={selectedOfficeId} officesById={officesById} markerRefs={markerRefs} />
@@ -144,6 +166,7 @@ export const MapView = ({
           {offices.map((office) => {
             const weather = weatherByOfficeId[office.id];
             const error = errorsByOfficeId[office.id];
+            const isSelectedOffice = selectedOfficeId === office.id;
             const temperatureValue = temperatureUnit === 'F' ? weather?.temperatureF : weather?.temperatureC;
             const windValue =
               windSpeedUnit === 'mph'
@@ -151,20 +174,26 @@ export const MapView = ({
                 : windSpeedUnit === 'km/h'
                   ? weather?.windSpeedKph
                   : weather?.windSpeedMps;
+            const markerIcon = isDark
+              ? isSelectedOffice
+                ? darkMapMarkerSelectedIcon
+                : darkMapMarkerIcon
+              : mapMarkerIcon;
 
             return (
               <Marker
                 key={office.id}
                 position={[office.latitude, office.longitude]}
+                icon={markerIcon}
                 ref={(marker) => {
                   markerRefs.current[office.id] = marker;
                 }}
-                opacity={selectedOfficeId && selectedOfficeId !== office.id ? 0.55 : 1}
+                opacity={selectedOfficeId && !isSelectedOffice ? 0.55 : 1}
                 eventHandlers={{
                   click: () => onOfficeSelect(office.id)
                 }}
               >
-                <Popup keepInView autoPanPadding={[24, 96]}>
+                <Popup autoPan={false}>
                   <div className="min-w-[210px] text-sm leading-tight text-ink dark:text-slate-100">
                     <h3 className="font-semibold dark:text-slate-100">{office.name}</h3>
                     <p className="mb-1 text-slate-600 dark:text-slate-400">

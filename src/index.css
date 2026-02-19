@@ -35,6 +35,44 @@ body {
   color: #e2e8f0;
 }
 
+.dark .leaflet-control-zoom a {
+  background-color: #0f172a;
+  color: #e2e8f0;
+  border-color: #334155;
+}
+
+.dark .leaflet-control-zoom a:hover {
+  background-color: #1e293b;
+  color: #f8fafc;
+}
+
+.dark .leaflet-bar {
+  border-color: #334155;
+}
+
+.dark .leaflet-control-attribution {
+  background: rgba(15, 23, 42, 0.9);
+  color: #cbd5e1;
+}
+
+.dark .leaflet-control-attribution a {
+  color: #93c5fd;
+}
+
+.dark .leaflet-control-attribution a:hover {
+  color: #bfdbfe;
+}
+
+.leaflet-marker-icon.rovi-marker-pin--dark {
+  filter: brightness(0.28) contrast(1.35) sepia(1) saturate(4.2) hue-rotate(165deg)
+    drop-shadow(0 0 5px rgba(56, 189, 248, 0.65));
+}
+
+.leaflet-marker-icon.rovi-marker-pin--dark.rovi-marker-pin--selected {
+  filter: brightness(0.35) contrast(1.45) sepia(1) saturate(4.8) hue-rotate(165deg)
+    drop-shadow(0 0 8px rgba(125, 211, 252, 0.85));
+}
+
 .office-list-scroll {
   scrollbar-width: thin;
   scrollbar-color: #c8b9ab transparent;
