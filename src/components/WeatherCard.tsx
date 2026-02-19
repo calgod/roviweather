@@ -59,6 +59,7 @@ export const WeatherCard = ({
   const temperatureValue = temperatureUnit === 'F' ? weather?.temperatureF : weather?.temperatureC;
   const windValue =
     windSpeedUnit === 'mph' ? weather?.windSpeedMph : windSpeedUnit === 'km/h' ? weather?.windSpeedKph : weather?.windSpeedMps;
+  const localTime = weather ? formatLocalTime(weather.timezoneOffsetSeconds, currentTimeMs) : null;
 
   return (
     <article
@@ -71,17 +72,17 @@ export const WeatherCard = ({
           onSelect(office.id);
         }
       }}
-      className={`w-full rounded-2xl border bg-white/90 p-4 text-left shadow-card backdrop-blur-sm transition hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent dark:bg-slate-950/80 ${
+      className={`w-full rounded-2xl border bg-white/90 p-3 text-left shadow-card backdrop-blur-sm transition hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent dark:bg-slate-950/80 ${
         isSelected ? 'border-accent/70 ring-2 ring-accent/50' : 'border-slate-200 dark:border-slate-700'
       }`}
       aria-pressed={isSelected}
       aria-label={`Focus ${office.name} on map`}
     >
-      <div className="relative mb-3 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+      <div className="relative mb-2 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
         <img
           src={imageSrc}
           alt={`Location snapshot for ${office.name}`}
-          className="h-28 w-full object-cover"
+          className="h-24 w-full object-cover"
           loading="lazy"
           onError={() => {
             if (imageSrc !== fallbackImageUrl) {
@@ -106,44 +107,57 @@ export const WeatherCard = ({
           <Star size={16} strokeWidth={2} fill={isFavorite ? 'currentColor' : 'none'} />
         </button>
       </div>
-      <header className="mb-3 flex items-start justify-between gap-3">
-        <div>
+      <header className="mb-2 flex items-start justify-between gap-3">
+        <div className="min-w-0">
           <h3 className="text-base font-semibold text-ink dark:text-slate-100">{office.name}</h3>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
+          <p className="truncate text-xs uppercase tracking-[0.09em] text-slate-500 dark:text-slate-400">
             {office.city}, {office.country}
           </p>
         </div>
-        {weather ? <img src={weather.iconUrl} alt={weather.condition} className="h-12 w-12" loading="lazy" /> : null}
+        {weather ? (
+          <div className="shrink-0 text-right">
+            <p className="text-[10px] uppercase tracking-[0.09em] text-slate-500 dark:text-slate-400">Local time</p>
+            <p className="text-sm font-semibold leading-none text-slate-900 dark:text-slate-100">{localTime}</p>
+          </div>
+        ) : null}
       </header>
 
       {loading ? <p className="text-sm text-slate-500 dark:text-slate-400">Loading current weather...</p> : null}
       {!loading && error ? <p className="text-sm text-red-600 dark:text-red-300">Weather unavailable: {error}</p> : null}
 
       {!loading && !error && weather ? (
-        <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm text-ink dark:text-slate-100">
-          <div>
-            <dt className="text-slate-500 dark:text-slate-400">Temperature</dt>
-            <dd className="font-medium">{temperatureValue}°{temperatureUnit}</dd>
+        <div className="space-y-2 text-ink dark:text-slate-100">
+          <div className="flex items-center justify-between rounded-xl border border-slate-200/80 bg-slate-50/65 px-3 py-2 dark:border-slate-700 dark:bg-slate-900/45">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.09em] text-slate-500 dark:text-slate-400">Temperature</p>
+              <p className="text-3xl font-semibold leading-none text-slate-900 dark:text-slate-50">
+                {temperatureValue}°{temperatureUnit}
+              </p>
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <img src={weather.iconUrl} alt={weather.condition} className="h-10 w-10 shrink-0" loading="lazy" />
+                <div className="text-right">
+                  <p className="text-[10px] uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">Condition</p>
+                  <p className="max-w-[8.5rem] truncate text-sm font-medium">{weather.condition}</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <div>
-            <dt className="text-slate-500 dark:text-slate-400">Condition</dt>
-            <dd className="font-medium">{weather.condition}</dd>
-          </div>
-          <div>
-            <dt className="text-slate-500 dark:text-slate-400">Humidity</dt>
-            <dd className="font-medium">{weather.humidity}%</dd>
-          </div>
-          <div>
-            <dt className="text-slate-500 dark:text-slate-400">Wind</dt>
-            <dd className="font-medium">
-              {windValue} {windSpeedUnit}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-slate-500 dark:text-slate-400">Current time</dt>
-            <dd className="font-medium">{formatLocalTime(weather.timezoneOffsetSeconds, currentTimeMs)}</dd>
-          </div>
-        </dl>
+
+          <dl className="grid grid-cols-2 gap-2 text-xs">
+            <div className="rounded-lg border border-slate-200/80 bg-slate-50/60 px-2.5 py-1.5 dark:border-slate-700 dark:bg-slate-900/35">
+              <dt className="text-[11px] uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">Humidity</dt>
+              <dd className="mt-0.5 text-sm font-medium">{weather.humidity}%</dd>
+            </div>
+            <div className="rounded-lg border border-slate-200/80 bg-slate-50/60 px-2.5 py-1.5 dark:border-slate-700 dark:bg-slate-900/35">
+              <dt className="text-[11px] uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">Wind</dt>
+              <dd className="mt-0.5 text-sm font-medium">
+                {windValue} {windSpeedUnit}
+              </dd>
+            </div>
+          </dl>
+        </div>
       ) : null}
     </article>
   );
