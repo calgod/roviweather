@@ -78,6 +78,26 @@ Frontend reads API base from `.env`:
 VITE_WEATHER_API_BASE=http://localhost:8787
 ```
 
+## Testing
+
+Run all tests (frontend + worker):
+
+```bash
+npm test
+```
+
+Run only frontend tests:
+
+```bash
+npm run test:frontend
+```
+
+Run only worker tests:
+
+```bash
+npm run test:worker
+```
+
 ## Deployment
 
 ### Deploy Worker
