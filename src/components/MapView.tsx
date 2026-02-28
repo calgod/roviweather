@@ -81,7 +81,11 @@ const MapSelectionController = ({ selectedOfficeId, officesById, markerRefs }: M
 
     const targetCenter = L.latLng(selectedOffice.latitude, selectedOffice.longitude);
     const nextZoom = Math.max(map.getZoom(), 5);
-    const distanceMeters = map.distance(map.getCenter(), targetCenter);
+    const mapSize = map.getSize();
+    const popupHeadroomPx = mapSize.y >= 600 ? 170 : 130;
+    const targetPoint = map.project(targetCenter, nextZoom);
+    const adjustedCenter = map.unproject(targetPoint.subtract([0, popupHeadroomPx]), nextZoom);
+    const distanceMeters = map.distance(map.getCenter(), adjustedCenter);
     const shouldMove = distanceMeters > 150 || map.getZoom() !== nextZoom;
     let rafId: number | null = null;
 
@@ -100,7 +104,7 @@ const MapSelectionController = ({ selectedOfficeId, officesById, markerRefs }: M
     };
 
     if (shouldMove) {
-      map.setView(targetCenter, nextZoom, { animate: false });
+      map.setView(adjustedCenter, nextZoom, { animate: false });
     }
 
     rafId = window.requestAnimationFrame(openSelectedPopup);
