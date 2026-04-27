@@ -8,7 +8,7 @@ export const offices: Office[] = [
     country: 'USA',
     address: '1455 Danner Drive, Aurora, OH 44202',
     imageUrl:
-      'https://lh3.googleusercontent.com/gps-cs-s/AHVAwerslbxwCka-RqyKwLFWjZqoj44SeY963l-HSanLMNZ9No7ZWVlUuEY6EZ3k6NH_XqyhmipPmi4TwDr6t9xfqbiEgqMW2a9-sE21ORnn15CZXIpgeyT2g_qaaYIW-QWQjXte5AEY=s680-w680-h510-rw',
+      'https://images1.loopnet.com/i2/XS-yU5nlq0WmW6PK_5DMe0YX8LoBqn460bb41zetRwE/117/image.jpg',
     latitude: 41.27814,
     longitude: -81.3289235
   },
